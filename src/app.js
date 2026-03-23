@@ -1,7 +1,6 @@
-
 import express from "express";
-// import productRoutes from "./routes/product.routes.js";
-// import errorHandler from "./middlewares/error.middleware.js";
+import productRoutes from "./routes/productRoute.js";
+import errorHandler from "./middlewares/errorMiddleware.js";
 
 const app = express();
 
@@ -13,7 +12,7 @@ app.get("/health", (_req, res) => {
 });
 
 //  API Routes
-// app.use("/api/products", productRoutes);
+app.use("/api/products", productRoutes);
 
 // ── 404 Fallback ───────────────────────────────────────────────
 // Catches any request that didn't match a registered route.
@@ -24,6 +23,6 @@ app.use((_req, res) => {
   });
 });
 
-//  app.use(errorHandler);
+app.use(errorHandler);
 
 export default app;
