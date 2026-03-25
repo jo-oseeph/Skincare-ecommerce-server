@@ -1,33 +1,19 @@
-import { Router } from "express";
+import express from "express";
+import { protect, adminOnly } from "../middlewares/authMiddleware.js";
+import { upload } from "../middlewares/uploadMiddleware.js";
 import validate from "../middlewares/validateMiddleware.js";
-import {
-  createProductSchema,
-  updateProductSchema,
-  productQuerySchema,
-} from "../validators/productValidator.js";
-import {
-  createProduct,
-  getProducts,
-  getProduct,
-  updateProduct,
-  deleteProduct,
-} from "../controllers/productController.js";
+import { createProductSchema } from "../validators/productValidator.js";
+import { createProduct } from "../controllers/productController.js";
 
-const router = Router();
+const router = express.Router();
 
-// POST   /api/products        — create a new product
-router.post("/", validate(createProductSchema, "body"), createProduct);
-
-// GET    /api/products        — list products with filters/search/pagination
-router.get("/", validate(productQuerySchema, "query"), getProducts);
-
-// GET    /api/products/:id    — single product by ID
-router.get("/:id", getProduct);
-
-// PATCH  /api/products/:id    — partial update
-router.patch("/:id", validate(updateProductSchema, "body"), updateProduct);
-
-// DELETE /api/products/:id    — soft delete (sets isActive = false)
-router.delete("/:id", deleteProduct);
+router.post(
+  "/",
+  protect,                // checks token
+  adminOnly,              // checks role
+  upload.array("images", 5), // handles file upload
+  validate(createProductSchema), // validates input
+  createProduct           // creates product
+);
 
 export default router;
