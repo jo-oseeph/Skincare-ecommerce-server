@@ -11,19 +11,13 @@ const validate = (schema, source = "body") => {
     const result = schema.safeParse(req[source]);
 
     if (!result.success) {
-      // Flatten Zod's nested error structure into a simple
-      // key → message array map for easy frontend consumption.
-      const errors = result.error.flatten().fieldErrors;
-
       return res.status(400).json({
         success: false,
         message: "Validation failed",
-        errors,
+        errors: result.error.flatten().fieldErrors,
       });
     }
 
-    // Replace the raw input with the parsed (and coerced) data.
-    // This means controllers always receive clean, typed values.
     req[source] = result.data;
     next();
   };
