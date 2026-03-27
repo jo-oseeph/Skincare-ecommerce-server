@@ -2,10 +2,7 @@
 import Product from "../models/Product.js"; 
 import AppError from "../utils/AppError.js";
 
-// ── Allowed fields for PATCH (explicit whitelist) ──────────────
-// Only these fields can be updated through the public API.
-// vendorId and isActive are intentionally excluded to prevent
-// ownership hijacking or accidental reactivation.
+
 const UPDATABLE_FIELDS = [
   "name",
   "description",
@@ -16,10 +13,9 @@ const UPDATABLE_FIELDS = [
 ];
 
 // ── Create ─────────────────────────────────────────────────────
+
 export const createProduct = async (data) => {
-  // Explicitly pick allowed fields — never spread req.body
-  // directly even after Zod validation, as an extra defence
-  // against future schema changes accidentally exposing fields.
+
   const product = await Product.create({
     name: data.name,
     description: data.description,

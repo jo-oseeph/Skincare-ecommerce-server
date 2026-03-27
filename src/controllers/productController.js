@@ -1,9 +1,37 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import * as productService from "../services/productService.js";
+import cloudinary from "../config/cloudinary.js";
 
-// POST /api/products
 export const createProduct = asyncHandler(async (req, res) => {
-  const product = await productService.createProduct(req.body);
+  let imageUrls = [];
+
+  // 🔍 Debug (remove later)
+  console.log("FILES:", req.files);
+
+  // Upload images to Cloudinary
+  if (req.files && req.files.length > 0) {
+    for (const file of req.files) {
+      // convert buffer → base64
+      const base64 = file.buffer.toString("base64");
+
+      const result = await cloudinary.uploader.upload(
+        `data:${file.mimetype};base64,${base64}`,
+        {
+          folder: "skincare/products",
+        }
+      );
+
+      imageUrls.push(result.secure_url);
+    }
+  }
+
+  // attach images to body
+  const productData = {
+    ...req.body,
+    images: imageUrls,
+  };
+
+  const product = await productService.createProduct(productData);
 
   res.status(201).json({
     success: true,

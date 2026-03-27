@@ -1,6 +1,5 @@
 import multer from "multer";
 
-// Store file temporarily in memory (not disk)
 const storage = multer.memoryStorage();
 
 // Only allow images
