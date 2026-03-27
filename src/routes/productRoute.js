@@ -14,11 +14,11 @@ import {
 
 const router = express.Router();
 
-// ── PUBLIC ROUTES ─────────────────────────────
+// PUBLIC ROUTES 
 router.get("/", getProducts);
 router.get("/:id", getProduct);
 
-// ── ADMIN ROUTES ─────────────────────────────
+//  ADMIN ROUTES
 router.post(
   "/",
   protect,
