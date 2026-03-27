@@ -1,33 +1,31 @@
 import Order from "../models/order.js";
+import Cart from "../models/cart.js";
 import Product from "../models/product.js";
 import AppError from "../utils/AppError.js";
 
-// ── CREATE ORDER ─────────────────────────────────────────────
-export const createOrder = async (userId, data) => {
-  const { items, phoneNumber } = data;
+//  CHECKOUT CREATE ORDER FROM CART
+export const checkout = async (userId, { phoneNumber }) => {
+  const cart = await Cart.findOne({ userId });
 
-  if (!items || items.length === 0) {
-    throw new AppError("Order items are required", 400);
+  if (!cart || cart.items.length === 0) {
+    throw new AppError("Cart is empty", 400);
   }
 
   let totalAmount = 0;
   const orderItems = [];
 
-  // NEVER trust frontend prices
-  for (const item of items) {
+  for (const item of cart.items) {
     const product = await Product.findById(item.productId);
 
     if (!product || !product.isActive) {
-      throw new AppError("Invalid product", 400);
+      throw new AppError("Invalid product in cart", 400);
     }
 
     if (product.stock < item.quantity) {
       throw new AppError(`Insufficient stock for ${product.name}`, 400);
     }
 
-    // calculate using DB price
     const itemTotal = product.price * item.quantity;
-
     totalAmount += itemTotal;
 
     orderItems.push({
@@ -37,11 +35,12 @@ export const createOrder = async (userId, data) => {
       quantity: item.quantity,
     });
 
-    // reduce stock immediately
+    // reduce stock
     product.stock -= item.quantity;
     await product.save();
   }
 
+  // create order
   const order = await Order.create({
     userId,
     items: orderItems,
@@ -49,35 +48,29 @@ export const createOrder = async (userId, data) => {
     phoneNumber,
   });
 
+  // clear cart after successful order
+  cart.items = [];
+  await cart.save();
+
   return order;
 };
 
-// ── GET MY ORDERS ────────────────────────────────────────────
 export const getUserOrders = async (userId) => {
-  return await Order.find({ userId })
-    .sort({ createdAt: -1 })
-    .lean();
+  return await Order.find({ userId }).sort({ createdAt: -1 }).lean();
 };
 
-// ── GET ALL ORDERS (ADMIN) ───────────────────────────────────
 export const getAllOrders = async () => {
-  return await Order.find()
-    .sort({ createdAt: -1 })
-    .lean();
+  return await Order.find().sort({ createdAt: -1 }).lean();
 };
 
-// ── GET SINGLE ORDER ─────────────────────────────────────────
 export const getOrderById = async (id) => {
   const order = await Order.findById(id).lean();
 
-  if (!order) {
-    throw new AppError("Order not found", 404);
-  }
+  if (!order) throw new AppError("Order not found", 404);
 
   return order;
 };
 
-// ── UPDATE ORDER STATUS (ADMIN) ──────────────────────────────
 export const updateOrderStatus = async (id, status) => {
   const order = await Order.findByIdAndUpdate(
     id,
@@ -85,9 +78,7 @@ export const updateOrderStatus = async (id, status) => {
     { new: true }
   ).lean();
 
-  if (!order) {
-    throw new AppError("Order not found", 404);
-  }
+  if (!order) throw new AppError("Order not found", 404);
 
   return order;
 };
