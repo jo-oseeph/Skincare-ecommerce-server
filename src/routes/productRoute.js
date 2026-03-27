@@ -3,17 +3,44 @@ import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 import { upload } from "../middlewares/uploadMiddleware.js";
 import validate from "../middlewares/validateMiddleware.js";
 import { createProductSchema } from "../validators/productValidator.js";
-import { createProduct } from "../controllers/productController.js";
+
+import {
+  createProduct,
+  getProducts,
+  getProduct,
+  updateProduct,
+  deleteProduct
+} from "../controllers/productController.js";
 
 const router = express.Router();
 
+// ── PUBLIC ROUTES ─────────────────────────────
+router.get("/", getProducts);
+router.get("/:id", getProduct);
+
+// ── ADMIN ROUTES ─────────────────────────────
 router.post(
   "/",
-  protect,                // checks token
-  adminOnly,              // checks role
-  upload.array("images", 5), // handles file upload
-  validate(createProductSchema), // validates input
-  createProduct           // creates product
+  protect,
+  adminOnly,
+  upload.array("images", 5),
+  validate(createProductSchema),
+  createProduct
+);
+
+router.patch(
+  "/:id",
+  protect,
+  adminOnly,
+  upload.array("images", 5),
+  updateProduct
+);
+
+router.delete(
+  "/:id",
+  protect,
+  adminOnly,
+  deleteProduct
 );
 
 export default router;

@@ -2,33 +2,28 @@ import asyncHandler from "../utils/asyncHandler.js";
 import * as productService from "../services/productService.js";
 import cloudinary from "../config/cloudinary.js";
 
+// CREATE PRODUCT
 export const createProduct = asyncHandler(async (req, res) => {
   let imageUrls = [];
-
-  // 🔍 Debug (remove later)
-  console.log("FILES:", req.files);
 
   // Upload images to Cloudinary
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
-      // convert buffer → base64
       const base64 = file.buffer.toString("base64");
 
       const result = await cloudinary.uploader.upload(
         `data:${file.mimetype};base64,${base64}`,
-        {
-          folder: "skincare/products",
-        }
+        { folder: "skincare/products" }
       );
 
       imageUrls.push(result.secure_url);
     }
   }
 
-  // attach images to body
   const productData = {
     ...req.body,
     images: imageUrls,
+    vendorId: req.user.id // secure source
   };
 
   const product = await productService.createProduct(productData);
@@ -40,7 +35,7 @@ export const createProduct = asyncHandler(async (req, res) => {
   });
 });
 
-//  GET /api/products
+// ── GET ALL PRODUCTS ─────────────────────────────────────────
 export const getProducts = asyncHandler(async (req, res) => {
   const result = await productService.getProducts(req.query);
 
@@ -51,7 +46,7 @@ export const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-// ── GET /api/products/:id ─────────────────────────────────────
+// ── GET SINGLE PRODUCT ───────────────────────────────────────
 export const getProduct = asyncHandler(async (req, res) => {
   const product = await productService.getProductById(req.params.id);
 
@@ -62,8 +57,26 @@ export const getProduct = asyncHandler(async (req, res) => {
   });
 });
 
-// ── PATCH /api/products/:id ───────────────────────────────────
+// ── UPDATE PRODUCT (ADMIN) ───────────────────────────────────
 export const updateProduct = asyncHandler(async (req, res) => {
+  let imageUrls = [];
+
+  // If new images are uploaded → replace
+  if (req.files && req.files.length > 0) {
+    for (const file of req.files) {
+      const base64 = file.buffer.toString("base64");
+
+      const result = await cloudinary.uploader.upload(
+        `data:${file.mimetype};base64,${base64}`,
+        { folder: "skincare/products" }
+      );
+
+      imageUrls.push(result.secure_url);
+    }
+
+    req.body.images = imageUrls;
+  }
+
   const product = await productService.updateProduct(req.params.id, req.body);
 
   res.status(200).json({
@@ -73,8 +86,19 @@ export const updateProduct = asyncHandler(async (req, res) => {
   });
 });
 
-// ── DELETE /api/products/:id ──────────────────────────────────
+// ── DELETE PRODUCT (ADMIN) ───────────────────────────────────
 export const deleteProduct = asyncHandler(async (req, res) => {
+  const product = await productService.getProductById(req.params.id);
+
+  // Remove images from Cloudinary
+  for (const url of product.images) {
+    const parts = url.split("/");
+    const filename = parts[parts.length - 1];
+    const publicId = `skincare/products/${filename.split(".")[0]}`;
+
+    await cloudinary.uploader.destroy(publicId);
+  }
+
   await productService.deleteProduct(req.params.id);
 
   res.status(200).json({
