@@ -1,5 +1,6 @@
 import { registerUser, loginUser } from "../services/authService.js";
 import { generateToken } from "../utils/generateToken.js";
+import crypto from "crypto";  
 
 const formatUser = (user) => ({
   id: user._id,

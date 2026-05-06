@@ -1,4 +1,5 @@
 import { z } from "zod";
+import crypto from "crypto";  
 
 export const registerSchema = z.object({
   name: z.string().min(2),

@@ -1,8 +1,8 @@
- 
 import "dotenv/config";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import connectDB from "../config/db.js";
+import crypto from "crypto";  
 
 const seedAdmin = async () => {
   await connectDB();
@@ -21,7 +21,7 @@ const seedAdmin = async () => {
     role: "admin",
   });
 
-  console.log("✅  Admin seeded successfully.");
+  console.log(" Admin seeded successfully.");
   process.exit(0);
 };
 

@@ -11,7 +11,7 @@ export const getCart = asyncHandler(async (req, res) => {
   });
 });
 
-// ── ADD TO CART ─────────────────────────────────────────────
+//  ADD TO CART
 export const addToCart = asyncHandler(async (req, res) => {
   const cart = await cartService.addToCart(req.user.id, req.body);
 
