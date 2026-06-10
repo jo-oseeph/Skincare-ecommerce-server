@@ -1,46 +1,27 @@
 import express from "express";
-import { protect, adminOnly } from "../middlewares/authMiddleware.js";
-import { upload } from "../middlewares/uploadMiddleware.js";
-import validate from "../middlewares/validateMiddleware.js";
-import { createProductSchema } from "../validators/productValidator.js";
-
 import {
-  createProduct,
   getProducts,
   getProduct,
+  createProduct,
   updateProduct,
   deleteProduct
 } from "../controllers/productController.js";
 
 const router = express.Router();
 
-// PUBLIC ROUTES 
+// GET ALL PRODUCTS
 router.get("/", getProducts);
+
+// CREATE PRODUCT
+router.post("/", createProduct);
+
+// GET SINGLE PRODUCT
 router.get("/:id", getProduct);
 
-//  ADMIN ROUTES
-router.post(
-  "/",
-  protect,
-  adminOnly,
-  upload.array("images", 5),
-  validate(createProductSchema),
-  createProduct
-);
+// UPDATE PRODUCT
+router.put("/:id", updateProduct);
 
-router.patch(
-  "/:id",
-  protect,
-  adminOnly,
-  upload.array("images", 5),
-  updateProduct
-);
-
-router.delete(
-  "/:id",
-  protect,
-  adminOnly,
-  deleteProduct
-);
+// DELETE PRODUCT
+router.delete("/:id", deleteProduct);
 
 export default router;

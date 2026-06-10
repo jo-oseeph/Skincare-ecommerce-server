@@ -6,7 +6,6 @@ import cloudinary from "../config/cloudinary.js";
 export const createProduct = asyncHandler(async (req, res) => {
   let imageUrls = [];
 
-  // Upload images to Cloudinary
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
       const base64 = file.buffer.toString("base64");
@@ -23,7 +22,7 @@ export const createProduct = asyncHandler(async (req, res) => {
   const productData = {
     ...req.body,
     images: imageUrls,
-    vendorId: req.user.id // secure source
+    vendorId: req.user.id
   };
 
   const product = await productService.createProduct(productData);
@@ -31,37 +30,54 @@ export const createProduct = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: "Product created successfully",
-    data: product,
+    data: product
   });
 });
 
-// ── GET ALL PRODUCTS ─────────────────────────────────────────
+
+// GET ALL PRODUCTS (FIXED)
 export const getProducts = asyncHandler(async (req, res) => {
   const result = await productService.getProducts(req.query);
+
+  // HARD GUARD: ensures service is returning data
+  if (!result) {
+    return res.status(500).json({
+      success: false,
+      message: "Product service returned no result"
+    });
+  }
 
   res.status(200).json({
     success: true,
     message: "Products retrieved successfully",
-    ...result,
+    ...result
   });
 });
 
-// ── GET SINGLE PRODUCT ───────────────────────────────────────
+
+// GET SINGLE PRODUCT
 export const getProduct = asyncHandler(async (req, res) => {
   const product = await productService.getProductById(req.params.id);
+
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found"
+    });
+  }
 
   res.status(200).json({
     success: true,
     message: "Product retrieved successfully",
-    data: product,
+    data: product
   });
 });
 
-// ── UPDATE PRODUCT (ADMIN) ───────────────────────────────────
+
+// UPDATE PRODUCT
 export const updateProduct = asyncHandler(async (req, res) => {
   let imageUrls = [];
 
-  // If new images are uploaded → replace
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
       const base64 = file.buffer.toString("base64");
@@ -82,27 +98,29 @@ export const updateProduct = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Product updated successfully",
-    data: product,
+    data: product
   });
 });
 
-// ── DELETE PRODUCT (ADMIN) ───────────────────────────────────
+
+// DELETE PRODUCT
 export const deleteProduct = asyncHandler(async (req, res) => {
   const product = await productService.getProductById(req.params.id);
 
-  // Remove images from Cloudinary
-  for (const url of product.images) {
-    const parts = url.split("/");
-    const filename = parts[parts.length - 1];
-    const publicId = `skincare/products/${filename.split(".")[0]}`;
+  if (product?.images?.length) {
+    for (const url of product.images) {
+      const parts = url.split("/");
+      const filename = parts[parts.length - 1];
+      const publicId = `skincare/products/${filename.split(".")[0]}`;
 
-    await cloudinary.uploader.destroy(publicId);
+      await cloudinary.uploader.destroy(publicId);
+    }
   }
 
   await productService.deleteProduct(req.params.id);
 
   res.status(200).json({
     success: true,
-    message: "Product deactivated successfully",
+    message: "Product deleted successfully"
   });
 });

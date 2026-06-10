@@ -52,12 +52,12 @@ export const mpesaCallback = asyncHandler(async (req, res) => {
       phone: get("PhoneNumber"),
     };
 
-    console.log("✅ Payment success:", paymentData);
+    console.log("Payment success:", paymentData);
 
     // 🔥 NEXT STEP: update order here
 
   } else {
-    console.log(`❌ Payment failed [${ResultCode}]: ${ResultDesc}`);
+    console.log(` Payment failed [${ResultCode}]: ${ResultDesc}`);
   }
 
   // ALWAYS respond 200
