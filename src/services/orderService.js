@@ -4,7 +4,7 @@ import Product from "../models/product.js";
 import AppError from "../utils/AppError.js";
 
 //  CHECKOUT CREATE ORDER FROM CART
-export const checkout = async (userId, { phoneNumber }) => {
+export const checkout = async (userId, { deliveryDetails, paymentMethod }) => {
   const cart = await Cart.findOne({ userId });
 
   if (!cart || cart.items.length === 0) {
@@ -41,13 +41,13 @@ export const checkout = async (userId, { phoneNumber }) => {
   }
 
   // create order
-  const order = await Order.create({
-    userId,
-    items: orderItems,
-    totalAmount,
-    phoneNumber,
-  });
-
+const order = await Order.create({
+  userId,
+  items: orderItems,
+  totalAmount,
+  paymentMethod: paymentMethod || "mpesa",
+  deliveryDetails,
+});
   // clear cart after successful order
   cart.items = [];
   await cart.save();

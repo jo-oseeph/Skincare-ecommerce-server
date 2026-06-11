@@ -7,37 +7,46 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      index: true
+      index: true,
     },
     price: {
       type: Number,
       required: true,
       min: 0,
-      index: true
+      index: true,
     },
     category: {
       type: String,
       required: true,
-      enum: PRODUCT_CATEGORIES, // restrict values at DB level
-      index: true
+      enum: PRODUCT_CATEGORIES,
+      index: true,
     },
     stock: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    description: String,
+    description: {
+      type: String,
+    },
     images: [String],
     isActive: {
       type: Boolean,
-      default: true
+      default: true,
+      index: true,
     },
     vendorId: {
       type: String,
       default: "default_vendor",
-      index: true
-    }
+      index: true,
+    },
   },
   { timestamps: true }
 );
+
+// ✅ ADD THIS: required for $text search
+productSchema.index({
+  name: "text",
+  description: "text",
+});
 
 export default mongoose.model("Product", productSchema);

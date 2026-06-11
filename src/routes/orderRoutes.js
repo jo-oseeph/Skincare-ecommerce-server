@@ -9,7 +9,6 @@ import {
 
 import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 
-
 const router = express.Router();
 
 // USER

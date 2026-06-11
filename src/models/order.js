@@ -36,14 +36,22 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      default: "mpesa",
+      enum: ["whatsapp_manual", "mpesa", "cash"],
+      default: "whatsapp_manual",
     },
-
-    phoneNumber: String,
 
     isPaid: {
       type: Boolean,
       default: false,
+    },
+
+    deliveryDetails: {
+      fullName: { type: String, required: true },
+      phoneNumber: { type: String, required: true },
+      county: { type: String, required: true },
+      town: { type: String, required: true },
+      address: { type: String, required: true },
+      landmark: { type: String, default: "" },
     },
   },
   { timestamps: true }
