@@ -43,7 +43,7 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ ADD THIS: required for $text search
+//  for $text search
 productSchema.index({
   name: "text",
   description: "text",
